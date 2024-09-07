@@ -1,14 +1,13 @@
 import { Message } from "../models/messageSchema.js";
+import { catchAsyncError } from "../middleware/catchAsyncError.js";
+import ErrorHandler from "../middleware/errorMiddleware.js";
 
-export const sendMessage = async (req, res, next) => {
+export const sendMessage = catchAsyncError(async (req, res, next) => {
   const { firstName, lastName, email, phone, message } = req.body;
   if (!firstName || !lastName || !email || !phone || !message) {
-    return res.status(400).json({
-      sucess: false,
-      message: "Please provide all fields",
-    });
+    return next(new ErrorHandler("Please fill in all fields", 400));
   }
-  
+
   await Message.create({
     firstName,
     lastName,
@@ -20,4 +19,5 @@ export const sendMessage = async (req, res, next) => {
     success: true,
     message: "Message sent successfully",
   });
-};
+});
+
